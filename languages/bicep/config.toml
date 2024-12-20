@@ -1,0 +1,24 @@
+name = "Bicep"
+grammar = "bicep"
+path_suffixes = ["bicep", "bicepparam"]
+line_comments = ["// "]
+block_comments = ["/*", "*/"]
+autoclose_before = ":.,=}])' \n\t"
+brackets = [
+    { start = "{", end = "}", close = true, newline = true },
+    { start = "[", end = "]", close = true, newline = true },
+    { start = "(", end = ")", close = true, newline = true },
+    { start = "'", end = "'", close = true, newline = false, not_in = [
+        "string",
+        "comment",
+    ] },
+    { start = "'''", end = "'''", close = true, newline = false, not_in = [
+        "string",
+        "comment",
+    ] },
+    { start = "/*", end = "*/", close = true, newline = false, not_in = [
+        "string",
+        "comment",
+    ] },
+]
+tab_size = 2
