@@ -231,4 +231,4 @@
 [
   (comment)
   (diagnostic_comment)
-] @comment @spell
+] @comment
