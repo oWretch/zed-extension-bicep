@@ -1,0 +1,87 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.1.11
+        with:
+          versionSpec: 6.0.x
+
+      - name: Install GitReleaseManager
+        uses: gittools/actions/gitreleasemanager/setup@v3.1.11
+        with:
+          versionSpec: 0.18.x
+
+      - name: Determine Version
+        id: release_version
+        uses: gittools/actions/gitversion/execute@v3.1.11
+        with:
+          useConfigFile: true
+
+      - name: Update Version in Cargo.toml
+        uses: colathro/toml-editor@1.1.0
+        with:
+          file: Cargo.toml
+          key: package.version
+          value: ${{ steps.release_version.outputs.fullSemVer }}
+
+      - name: Update Version in extension.toml
+        uses: colathro/toml-editor@1.1.0
+        with:
+          file: extension.toml
+          key: version
+          value: ${{ steps.release_version.outputs.fullSemVer }}
+
+      - name: Add Updated Files
+        run: |
+          git add Cargo.toml extension.toml
+
+      - name: Commit changes
+        uses: qoomon/actions--create-commit@v1
+        id: commit
+        with:
+          message: Release v${{ steps.release_version.outputs.fullSemVer }}
+          skip-empty: true
+
+      - name: Tag Release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git tag -a v${{ steps.release_version.outputs.fullSemVer }} -m "Release v${{ steps.release_version.outputs.fullSemVer }}"
+          git push origin main --follow-tags
+
+      - name: Create GitHub Release
+        uses: gittools/actions/gitreleasemanager/create@v3.1.11
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          owner: ${{ github.repository_owner }}
+          repository: ${{ github.event.repository.name }}
+          name: v${{ steps.release_version.outputs.fullSemVer }}
+
+      # - uses: huacnlee/zed-extension-action@v1
+      #   with:
+      #     extension-name: bicep
+      #     push-to: oWretch/zed-extensions
+      #     create-pullrequest: false
+      #   env:
+      #     # the personal access token should have "repo" & "workflow" scopes
+      #     COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
