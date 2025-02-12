@@ -22,8 +22,8 @@
 (call_expression
   function: (identifier) @function.call)
 
-; (user_defined_function
-;   name: (identifier) @function)
+(user_defined_function
+  name: (identifier) @function)
 
 ; Properties
 (object_property
@@ -86,9 +86,9 @@
     (member_expression
       object: (identifier) @variable.parameter)))
 
-; (parameter
-;   .
-;   (identifier) @variable.parameter)
+(parameter
+  .
+  (identifier) @variable.parameter)
 
 ; Variables
 (variable_declaration
@@ -138,13 +138,13 @@
   "targetScope"
   "type"
   "var"
-  ; "using"
-  ; "test"
+  "using"
+  "test"
 ] @keyword
 
-; "func" @keyword.function
+"func" @keyword.function
 
-; "assert" @keyword.exception
+"assert" @keyword.exception
 
 ; Operators
 [
@@ -167,14 +167,14 @@
   "??"
   "="
   "!"
-  ; ".?"
+  ".?"
 ] @operator
 
-; (subscript_expression
-;   "?" @operator)
+(subscript_expression
+  "?" @operator)
 
-; (nullable_type
-;   "?" @operator)
+(nullable_type
+  "?" @operator)
 
 "in" @keyword.operator
 
