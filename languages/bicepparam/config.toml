@@ -1,6 +1,6 @@
-name = "Bicep"
+name = "Bicep Parameters"
 grammar = "bicep"
-path_suffixes = ["bicep"]
+path_suffixes = ["bicepparam"]
 line_comments = ["// "]
 block_comments = ["/*", "*/"]
 autoclose_before = ":.,=}])' \n\t"
