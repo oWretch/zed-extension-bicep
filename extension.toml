@@ -4,7 +4,7 @@ description = "Bicep syntax highlighting and snippets"
 version = "0.0.4"
 schema_version = 1
 repository = "https://github.com/oWretch/zed-extension-bicep"
-authors = ["Jerome Brown <jerome@SoliDeoGloria.tech>"]
+authors = ["Jerome Brown <Jerome@SoliDeoGloria.tech>"]
 
 [grammars.bicep]
 repository = "https://github.com/tree-sitter-grammars/tree-sitter-bicep"
