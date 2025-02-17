@@ -33,13 +33,15 @@ impl zed::Extension for BicepExtension {
 
 impl BicepExtension {
     fn dotnet_binary_path(&mut self, worktree: &zed::Worktree) -> Result<String> {
-        if let Some(path) = &self.dotnet_binary_path {
-            if fs::metadata(path).map_or(false, |stat| stat.is_file()) {
-                return Ok(path.clone());
-            }
-        }
-
-        let dotnet_path = worktree.which("dotnet").ok_or_else(|| "dotnet not found")?;
+        let dotnet_path = match &self.dotnet_binary_path {
+            Some(path) if fs::metadata(path).map_or(false, |stat| stat.is_file()) => path.clone(),
+            Some(path) => worktree
+                .which(path.clone().as_str())
+                .ok_or_else(|| "DotNet 8.0+ must be installed for Bicep")?,
+            None => worktree
+                .which("dotnet")
+                .ok_or_else(|| "DotNet 8.0+ must be installed for Bicep")?,
+        };
         self.dotnet_binary_path = Some(dotnet_path.clone());
         Ok(dotnet_path)
     }
