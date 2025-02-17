@@ -1,7 +1,6 @@
 use std::fs;
 use std::path;
-use zed::LanguageServerId;
-use zed_extension_api::{self as zed, Result};
+use zed_extension_api::{self as zed, LanguageServerId, Result};
 
 struct BicepExtension {
     dotnet_binary_path: Option<String>,
