@@ -1,11 +1,11 @@
 [package]
 name = "bicep"
-version = "0.0.4"
+version = "1.0.0"
 edition = "2021"
 
 [lib]
 path = "src/bicep.rs"
-crate-type = ["cdylib"]
+crate-type = [ "cdylib" ]
 
 [dependencies]
 zed_extension_api = "0.2.0"

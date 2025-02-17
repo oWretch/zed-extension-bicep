@@ -1,15 +1,15 @@
 id = "bicep"
 name = "Bicep"
 description = "Bicep syntax highlighting and snippets"
-version = "0.0.4"
+version = "1.0.0"
 schema_version = 1
 repository = "https://github.com/oWretch/zed-extension-bicep"
-authors = ["Jerome Brown <Jerome@SoliDeoGloria.tech>"]
+authors = [ "Jerome Brown <Jerome@SoliDeoGloria.tech>" ]
 
 [grammars.bicep]
 repository = "https://github.com/tree-sitter-grammars/tree-sitter-bicep"
-commit = "bff59884307c0ab009bd5e81afd9324b46a6c0f9"                      # v1.1.0
+commit = "bff59884307c0ab009bd5e81afd9324b46a6c0f9"
 
 [language_servers.bicep-ls]
 name = "Bicep Language Server"
-languages = ["Bicep"]
+languages = [ "Bicep" ]
