@@ -68,20 +68,3 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git tag -a v${{ steps.release_version.outputs.fullSemVer }} -m "Release v${{ steps.release_version.outputs.fullSemVer }}"
           git push origin main --follow-tags
-
-      - name: Create GitHub Release
-        uses: gittools/actions/gitreleasemanager/create@v3.1.11
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          owner: ${{ github.repository_owner }}
-          repository: ${{ github.event.repository.name }}
-          name: v${{ steps.release_version.outputs.fullSemVer }}
-
-      # - uses: huacnlee/zed-extension-action@v1
-      #   with:
-      #     extension-name: bicep
-      #     push-to: oWretch/zed-extensions
-      #     create-pullrequest: false
-      #   env:
-      #     # the personal access token should have "repo" & "workflow" scopes
-      #     COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
