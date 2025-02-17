@@ -5,14 +5,12 @@ use zed_extension_api::{self as zed, Result};
 
 struct BicepExtension {
     dotnet_binary_path: Option<String>,
-    cached_lsp_path: Option<String>,
 }
 
 impl zed::Extension for BicepExtension {
     fn new() -> Self {
         Self {
             dotnet_binary_path: None,
-            cached_lsp_path: None,
         }
     }
 
@@ -47,12 +45,6 @@ impl BicepExtension {
     }
 
     fn language_server_path(&mut self, language_server_id: &LanguageServerId) -> Result<String> {
-        if let Some(path) = &self.cached_lsp_path {
-            if fs::metadata(path).map_or(false, |stat| stat.is_file()) {
-                return Ok(path.clone());
-            }
-        }
-
         zed::set_language_server_installation_status(
             language_server_id,
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
@@ -106,7 +98,6 @@ impl BicepExtension {
             .to_str()
             .unwrap()
             .to_string();
-        self.cached_lsp_path = Some(abs_path.clone());
         Ok(abs_path)
     }
 }
