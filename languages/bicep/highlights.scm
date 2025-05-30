@@ -1,7 +1,6 @@
 ; Includes
 [
   "import"
-  "provider"
   "with"
   "as"
   "from"
