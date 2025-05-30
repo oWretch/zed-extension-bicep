@@ -2,7 +2,8 @@
 
 This extension adds support for
 [Bicep](https://docs.microsoft.com/azure/azure-resource-manager/bicep/) to
-[Zed](https://zed.dev/).
+[Zed](https://zed.dev/). This includes syntax highlighting, IntelliSense, and
+error checking for both Bicep and Bicep Parameter files.
 
 ## Pre-requisites
 
