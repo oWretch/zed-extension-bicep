@@ -3,7 +3,7 @@ name = "Bicep"
 description = """
 Bicep language support. Bicep is a Domain Specific Language (DSL) created by Microsoft for deploying Azure resources declaratively. This extension provides intellisense for the core language and extends to support type definitions for all resource types in Azure.
 """
-version = "1.1.0"
+version = "1.2.0"
 schema_version = 1
 repository = "https://github.com/oWretch/zed-extension-bicep"
 authors = [ "Jerome Brown <Jerome@SoliDeoGloria.tech>" ]
