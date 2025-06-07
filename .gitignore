@@ -26,5 +26,4 @@ yarn-error.log*
 .yarn-integrity
 
 # Package-lock files
-package-lock.json
 yarn.lock
