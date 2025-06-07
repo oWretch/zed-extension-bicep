@@ -1,14 +1,13 @@
 {
-  "branches": [
-    "main"
-  ],
+  "branches": ["main"],
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "node -e \"const fs = require('fs'); const cargo = fs.readFileSync('Cargo.toml', 'utf8').replace(/^version = \\\".*\\\"/m, 'version = \\\"${nextRelease.version}\\\"'); fs.writeFileSync('Cargo.toml', cargo); const ext = fs.readFileSync('extension.toml', 'utf8').replace(/^version = \\\".*\\\"/m, 'version = \\\"${nextRelease.version}\\\"'); fs.writeFileSync('extension.toml', ext);\""
+        "prepareCmd": "node -e \"const fs = require('fs'); const cargo = fs.readFileSync('Cargo.toml', 'utf8').replace(/^version = \\\".*\\\"/m, 'version = \\\"${nextRelease.version}\\\"'); fs.writeFileSync('Cargo.toml', cargo); const ext = fs.readFileSync('extension.toml', 'utf8').replace(/^version = \\\".*\\\"/m, 'version = \\\"${nextRelease.version}\\\"'); fs.writeFileSync('extension.toml', ext);\"",
+        "publishCmd": "echo \"ReleaseVersion=${nextRelease.version}\" | tee $GITHUB_OUTPUT"
       }
     ],
     [
@@ -16,9 +15,11 @@
       {
         "assets": [
           "Cargo.toml",
-          "extension.toml"
+          "extension.toml",
+          "package.json",
+          "package-lock.json"
         ],
-        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}\n\n[skip ci]"
       }
     ],
     "@semantic-release/github"

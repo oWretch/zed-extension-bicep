@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore: # Don't trigger on releases
+      - Cargo.toml
+      - extension.toml
+      - package.json
+      - package-lock.json
 
 permissions:
   contents: read
@@ -32,13 +37,16 @@ jobs:
         run: npm ci
 
       - name: Release
+        id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
-      - uses: huacnlee/zed-extension-action@v1
+      - name: Publish extension
+        uses: oWretch/zed-extension-action@a84ec7f80c97e70ec1d71c1173fb852e22d1537c
         with:
           extension-name: bicep
           push-to: oWretch/zed-extensions
+          ref: v${{ steps.release.outputs.ReleaseVersion }}
         env:
           COMMITTER_TOKEN: ${{ secrets.EXTENSION_PUBLISH_TOKEN }}
