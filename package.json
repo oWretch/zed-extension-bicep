@@ -1,0 +1,29 @@
+{
+  "name": "zed-extension-bicep",
+  "version": "1.1.0",
+  "description": "Bicep language support for Zed editor",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oWretch/zed-extension-bicep.git"
+  },
+  "author": "Jerome Brown <Jerome@SoliDeoGloria.tech>",
+  "license": "MIT",
+  "scripts": {
+    "release": "semantic-release",
+    "release:dry-run": "semantic-release --dry-run",
+    "release:dry-run-local": "semantic-release --dry-run --no-ci",
+    "test": "node scripts/test-version-update.js",
+    "test-version": "node scripts/test-version-update.js",
+    "build": "cargo build",
+    "clean": "cargo clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.2.6",
+    "@semantic-release/release-notes-generator": "^12.1.0",
+    "semantic-release": "^22.0.12"
+  }
+}

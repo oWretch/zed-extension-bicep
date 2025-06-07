@@ -1,0 +1,26 @@
+{
+  "branches": [
+    "main"
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "node -e \"const fs = require('fs'); const cargo = fs.readFileSync('Cargo.toml', 'utf8').replace(/^version = \\\".*\\\"/m, 'version = \\\"${nextRelease.version}\\\"'); fs.writeFileSync('Cargo.toml', cargo); const ext = fs.readFileSync('extension.toml', 'utf8').replace(/^version = \\\".*\\\"/m, 'version = \\\"${nextRelease.version}\\\"'); fs.writeFileSync('extension.toml', ext);\""
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "Cargo.toml",
+          "extension.toml"
+        ],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ],
+    "@semantic-release/github"
+  ]
+}
