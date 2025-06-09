@@ -43,10 +43,10 @@ jobs:
         run: npx semantic-release
 
       - name: Publish extension
-        uses: oWretch/zed-extension-action@a84ec7f80c97e70ec1d71c1173fb852e22d1537c
+        uses: oWretch/zed-extension-action@1d337a3e55f51399c22244d1277a4c629b33e886
         with:
           extension-name: bicep
           push-to: oWretch/zed-extensions
-          ref: v${{ steps.release.outputs.ReleaseVersion }}
+          tag: v${{ steps.release.outputs.ReleaseVersion }}
         env:
           COMMITTER_TOKEN: ${{ secrets.EXTENSION_PUBLISH_TOKEN }}
