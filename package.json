@@ -19,7 +19,7 @@
     "clean": "cargo clean && rm -rf node_modules"
   },
   "devDependencies": {
-    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^11.0.3",
