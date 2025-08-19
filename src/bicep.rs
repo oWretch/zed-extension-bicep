@@ -83,6 +83,8 @@ impl BicepExtension {
             )
             .map_err(|err| format!("download error {}", err))?;
 
+            make_all_files_executable(&version_dir)?;
+
             // Ensure the binary exists
             let entries =
                 fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
@@ -101,6 +103,23 @@ impl BicepExtension {
             .to_string();
         Ok(abs_path)
     }
+}
+
+fn make_all_files_executable(dir: &str) -> Result<(), String> {
+    fn recurse(path: &str) -> Result<(), String> {
+        let metadata = fs::metadata(path).map_err(|e| format!("metadata error: {e}"))?;
+        if metadata.is_dir() {
+            for entry in fs::read_dir(path).map_err(|e| format!("read_dir error: {e}"))? {
+                let entry = entry.map_err(|e| format!("entry error: {e}"))?;
+                recurse(&entry.path().to_string_lossy())?;
+            }
+        } else if metadata.is_file() {
+            zed::make_file_executable(path)
+                .map_err(|e| format!("make_file_executable error: {e}"))?;
+        }
+        Ok(())
+    }
+    recurse(dir.as_ref())
 }
 
 zed::register_extension!(BicepExtension);
