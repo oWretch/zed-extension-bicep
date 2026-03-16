@@ -34,12 +34,9 @@ impl BicepExtension {
     fn dotnet_binary_path(&mut self, worktree: &zed::Worktree) -> Result<String> {
         let dotnet_path = match &self.dotnet_binary_path {
             Some(path) if fs::metadata(path).map_or(false, |stat| stat.is_file()) => path.clone(),
-            Some(path) => worktree
-                .which(path.clone().as_str())
-                .ok_or_else(|| "DotNet 8.0+ must be installed for Bicep")?,
-            None => worktree
+            _ => worktree
                 .which("dotnet")
-                .ok_or_else(|| "DotNet 8.0+ must be installed for Bicep")?,
+                .ok_or_else(|| "dotnet not found. Install the .NET SDK 8.0+ from https://dotnet.microsoft.com/download. Note: the standalone Bicep CLI is not sufficient.")?,
         };
         self.dotnet_binary_path = Some(dotnet_path.clone());
         Ok(dotnet_path)
@@ -83,15 +80,18 @@ impl BicepExtension {
             )
             .map_err(|err| format!("download error {}", err))?;
 
-            make_all_files_executable(&version_dir)?;
-
-            // Ensure the binary exists
+            // Clean up old versions
             let entries =
                 fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
             for entry in entries {
                 let entry = entry.map_err(|e| format!("failed to load directory entry {e}"))?;
                 if entry.file_name().to_str() != Some(&version_dir) {
-                    fs::remove_dir_all(entry.path()).ok();
+                    let path = entry.path();
+                    if path.is_dir() {
+                        fs::remove_dir_all(&path).ok();
+                    } else {
+                        fs::remove_file(&path).ok();
+                    }
                 }
             }
         }
@@ -103,23 +103,6 @@ impl BicepExtension {
             .to_string();
         Ok(abs_path)
     }
-}
-
-fn make_all_files_executable(dir: &str) -> Result<(), String> {
-    fn recurse(path: &str) -> Result<(), String> {
-        let metadata = fs::metadata(path).map_err(|e| format!("metadata error: {e}"))?;
-        if metadata.is_dir() {
-            for entry in fs::read_dir(path).map_err(|e| format!("read_dir error: {e}"))? {
-                let entry = entry.map_err(|e| format!("entry error: {e}"))?;
-                recurse(&entry.path().to_string_lossy())?;
-            }
-        } else if metadata.is_file() {
-            zed::make_file_executable(path)
-                .map_err(|e| format!("make_file_executable error: {e}"))?;
-        }
-        Ok(())
-    }
-    recurse(dir.as_ref())
 }
 
 zed::register_extension!(BicepExtension);
