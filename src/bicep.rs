@@ -1,3 +1,16 @@
+//! Zed extension for Bicep language support.
+//!
+//! This extension provides IntelliSense, error checking, and syntax support for Azure Bicep
+//! files (`.bicep` and `.bicepparam`) by downloading and launching the official
+//! [Bicep Language Server](https://github.com/Azure/bicep) via the .NET runtime.
+//!
+//! ## LSP Lifecycle
+//!
+//! 1. **Resolve `dotnet`** — Finds the `dotnet` binary on the system PATH (cached after first lookup).
+//! 2. **Download language server** — Fetches the latest `bicep-langserver.zip` from GitHub releases
+//!    and extracts it to a versioned directory. Old versions are cleaned up automatically.
+//! 3. **Launch** — Runs `dotnet --roll-forward Major <path>/Bicep.LangServer.dll`.
+
 use std::fs;
 use std::path;
 use zed_extension_api::{self as zed, LanguageServerId, Result};
