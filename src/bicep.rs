@@ -61,6 +61,8 @@ impl BicepExtension {
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
         );
 
+        let install_root = "bicep-language-servers";
+
         // Get the latest release
         let release = zed::latest_github_release(
             "Azure/bicep",
@@ -77,7 +79,8 @@ impl BicepExtension {
             .find(|asset| asset.name == "bicep-langserver.zip")
             .ok_or_else(|| "no bicep-langserver.zip found".to_string())?;
 
-        let version_dir = format!("bicep-langserver-{}", release.version);
+        let version_name = format!("bicep-langserver-{}", release.version);
+        let version_dir = format!("{install_root}/{version_name}");
         let lsp_path = format!("{}/Bicep.LangServer.dll", version_dir);
 
         if !fs::metadata(&lsp_path).is_ok_and(|stat| stat.is_file()) {
@@ -86,6 +89,8 @@ impl BicepExtension {
                 language_server_id,
                 &zed::LanguageServerInstallationStatus::Downloading,
             );
+            fs::create_dir_all(install_root)
+                .map_err(|e| format!("failed to create installation directory {install_root}: {e}"))?;
             zed::download_file(
                 &asset.download_url,
                 &version_dir,
@@ -94,17 +99,24 @@ impl BicepExtension {
             .map_err(|err| format!("download error {}", err))?;
 
             // Clean up old versions
-            let entries =
-                fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
+            let entries = fs::read_dir(install_root)
+                .map_err(|e| format!("failed to list installation directory {install_root}: {e}"))?;
             for entry in entries {
                 let entry = entry.map_err(|e| format!("failed to load directory entry {e}"))?;
-                if entry.file_name().to_str() != Some(&version_dir) {
+                let file_type = entry
+                    .file_type()
+                    .map_err(|e| format!("failed to inspect directory entry type {e}"))?;
+                if !file_type.is_dir() {
+                    continue;
+                }
+
+                let entry_name = entry.file_name();
+                let entry_name = entry_name.to_string_lossy();
+                if entry_name.starts_with("bicep-langserver-") && entry_name != version_name {
                     let path = entry.path();
-                    if path.is_dir() {
-                        fs::remove_dir_all(&path).ok();
-                    } else {
-                        fs::remove_file(&path).ok();
-                    }
+                    fs::remove_dir_all(&path).map_err(|e| {
+                        format!("failed to remove old language server directory {}: {e}", path.display())
+                    })?;
                 }
             }
         }
