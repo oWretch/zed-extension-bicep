@@ -27,3 +27,7 @@ yarn-error.log*
 
 # Package-lock files
 yarn.lock
+
+# Python cache files
+__pycache__/
+*.pyc
