@@ -18,12 +18,24 @@ impl zed::Extension for BicepExtension {
         language_server_id: &LanguageServerId,
         worktree: &zed::Worktree,
     ) -> Result<zed::Command> {
+        // TODO: When oWretch/zed#1 updates the extension WIT interface to expose
+        // LspTransport, replace `--stdio` with named-pipe transport:
+        //
+        //   Command {
+        //       transport: LspTransport::Pipe { arg_name: "--pipe".into() },
+        //       ..
+        //   }
+        //
+        // Zed will then create a temporary Unix domain socket, pass its path via
+        // `--pipe <path>` to the Bicep language server, and communicate over the
+        // socket instead of stdin/stdout. See: https://github.com/oWretch/zed/pull/1
         Ok(zed::Command {
-            command: self.dotnet_binary_path(worktree)?.clone(),
+            command: self.dotnet_binary_path(worktree)?,
             args: vec![
                 "--roll-forward".to_string(),
                 "Major".to_string(),
                 self.language_server_path(language_server_id)?,
+                "--stdio".to_string(),
             ],
             env: Default::default(),
         })
@@ -99,7 +111,7 @@ impl BicepExtension {
         let abs_path = path::absolute(&lsp_path)
             .map_err(|e| format!("failed to get absolute path {e}"))?
             .to_str()
-            .unwrap()
+            .ok_or_else(|| "language server path contains invalid UTF-8".to_string())?
             .to_string();
         Ok(abs_path)
     }

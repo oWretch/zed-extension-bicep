@@ -8,4 +8,12 @@ path = "src/bicep.rs"
 crate-type = [ "cdylib" ]
 
 [dependencies]
-zed_extension_api = "0.2.0"
+# Use the oWretch/zed fork which adds named-pipe/TCP transport support for LSPs.
+# The WIT interface will expose LspTransport to extensions in a future update;
+# at that point, language_server_command() should return:
+#   Command {
+#       transport: LspTransport::Pipe { arg_name: "--pipe".into() },
+#       ..
+#   }
+# See: https://github.com/oWretch/zed/pull/1
+zed_extension_api = { git = "https://github.com/oWretch/zed", rev = "c75ef47f37602a59eb22ca00fc3863f4c94a4cba" }
