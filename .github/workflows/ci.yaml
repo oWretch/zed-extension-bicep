@@ -1,8 +1,9 @@
 name: CI
 
 on:
-  pull_request:
-    branches: [main]
+  pull_request_target:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -13,11 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
         with:
+          toolchain: stable
           targets: wasm32-wasip2
           components: rustfmt, clippy
 
@@ -31,7 +33,7 @@ jobs:
         run: cargo build --target wasm32-wasip2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: "22"
           cache: "npm"
@@ -45,13 +47,15 @@ jobs:
   commit-lint:
     name: Conventional Commits
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 
       - name: Check PR title
-        uses: amannn/action-semantic-pull-request@v5
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

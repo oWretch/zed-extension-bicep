@@ -8,6 +8,13 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    assignees:
+      - "oWretch"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(deps-actions)"
   - package-ecosystem: "npm"
     directory: "/" # Location of package manifests
     schedule:
