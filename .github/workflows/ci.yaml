@@ -56,20 +56,38 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Detect vendored grammar directories
+        id: detect-grammars
+        run: |
+          if [ -d "grammars/bicep" ] && [ -d "grammars/bicep_params" ]; then
+            echo "has_grammars=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_grammars=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install tree-sitter-cli
+        if: steps.detect-grammars.outputs.has_grammars == 'true'
         run: npm install -g tree-sitter-cli
 
       - name: Install Bicep grammar dependencies
+        if: steps.detect-grammars.outputs.has_grammars == 'true'
         run: cd grammars/bicep && npm install
 
       - name: Test Bicep Grammar
+        if: steps.detect-grammars.outputs.has_grammars == 'true'
         run: cd grammars/bicep && tree-sitter test
 
       - name: Install Bicep Params grammar dependencies
+        if: steps.detect-grammars.outputs.has_grammars == 'true'
         run: cd grammars/bicep_params && npm install
 
       - name: Test Bicep Params Grammar
+        if: steps.detect-grammars.outputs.has_grammars == 'true'
         run: cd grammars/bicep_params && tree-sitter test
+
+      - name: Skip explanation
+        if: steps.detect-grammars.outputs.has_grammars != 'true'
+        run: echo "Skipping grammar tests: vendored grammar directories are not tracked in this repository."
 
   commit-lint:
     name: Conventional Commits
