@@ -46,13 +46,13 @@ impl zed::Extension for BicepExtension {
 impl BicepExtension {
     fn dotnet_binary_path(&mut self, worktree: &zed::Worktree) -> Result<String> {
         let dotnet_path = match &self.dotnet_binary_path {
-            Some(path) if fs::metadata(path).map_or(false, |stat| stat.is_file()) => path.clone(),
+            Some(path) if fs::metadata(path).is_ok_and(|stat| stat.is_file()) => path.clone(),
             Some(path) => worktree
                 .which(path.clone().as_str())
-                .ok_or_else(|| "DotNet 8.0+ must be installed for Bicep")?,
+                .ok_or("DotNet 8.0+ must be installed for Bicep")?,
             None => worktree
                 .which("dotnet")
-                .ok_or_else(|| "DotNet 8.0+ must be installed for Bicep")?,
+                .ok_or("DotNet 8.0+ must be installed for Bicep")?,
         };
         self.dotnet_binary_path = Some(dotnet_path.clone());
         Ok(dotnet_path)
@@ -78,15 +78,15 @@ impl BicepExtension {
             .assets
             .iter()
             .find(|asset| asset.name == "bicep-langserver.zip")
-            .ok_or_else(|| format!("no bicep-langserver.zip found"))?;
+            .ok_or_else(|| "no bicep-langserver.zip found".to_string())?;
 
         let version_dir = format!("bicep-langserver-{}", release.version);
         let lsp_path = format!("{}/Bicep.LangServer.dll", version_dir);
 
-        if !fs::metadata(&lsp_path).map_or(false, |stat| stat.is_file()) {
+        if !fs::metadata(&lsp_path).is_ok_and(|stat| stat.is_file()) {
             // Download the asset
             zed::set_language_server_installation_status(
-                &language_server_id,
+                language_server_id,
                 &zed::LanguageServerInstallationStatus::Downloading,
             );
             zed::download_file(
@@ -132,7 +132,7 @@ fn make_all_files_executable(dir: &str) -> Result<(), String> {
         }
         Ok(())
     }
-    recurse(dir.as_ref())
+    recurse(dir)
 }
 
 zed::register_extension!(BicepExtension);
