@@ -59,8 +59,14 @@ jobs:
       - name: Install tree-sitter-cli
         run: npm install -g tree-sitter-cli
 
+      - name: Install Bicep grammar dependencies
+        run: cd grammars/bicep && npm install
+
       - name: Test Bicep Grammar
         run: cd grammars/bicep && tree-sitter test
+
+      - name: Install Bicep Params grammar dependencies
+        run: cd grammars/bicep_params && npm install
 
       - name: Test Bicep Params Grammar
         run: cd grammars/bicep_params && tree-sitter test
