@@ -15,7 +15,9 @@
     "release:dry-run-local": "semantic-release --dry-run --no-ci",
     "test": "node scripts/test-version-update.js",
     "test-version": "node scripts/test-version-update.js",
-    "build": "cargo build",
+    "build": "cargo build --target wasm32-wasip2",
+    "fmt": "cargo fmt --check",
+    "lint": "cargo clippy --target wasm32-wasip2 -- -D warnings",
     "clean": "cargo clean && rm -rf node_modules"
   },
   "devDependencies": {
