@@ -157,6 +157,8 @@
   "output"
   "param"
   "resource"
+  "resourceInput"
+  "resourceOutput"
   "extension"
   "existing"
   "targetScope"
@@ -192,10 +194,14 @@
   "="
   "!"
   ".?"
+  "..."
 ] @operator
 
 (subscript_expression
   "?" @operator)
+
+(subscript_expression
+  "^" @operator)
 
 (nullable_type
   "?" @operator)

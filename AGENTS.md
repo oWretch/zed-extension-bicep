@@ -95,7 +95,7 @@ cargo fmt --check
 # Lint
 cargo clippy --target wasm32-wasip2 -- -D warnings
 
-# Run version-update test
+# Run repository tests
 npm test
 
 # Test tree-sitter grammars (requires: npm install -g tree-sitter-cli)
@@ -108,26 +108,20 @@ npm run release:dry-run-local
 
 ### No Unit Tests
 
-The Rust code currently has no unit tests. The only automated test (`npm test`) validates that the semantic-release version bump logic correctly updates `Cargo.toml` and `extension.toml`.
+The Rust code currently has no unit tests. `npm test` validates the semantic-release version bump logic and smoke-tests representative `.bicep` and `.bicepparam` fixtures against the pinned tree-sitter grammar commits from `extension.toml`.
 
 ### Grammar Testing
 
-Tree-sitter corpus tests are automatically run in CI for both Bicep and Bicep Params grammars. These validate that the grammar correctly parses valid Bicep syntax without errors.
+This repository smoke-tests the pinned upstream grammar revisions by parsing the files under `fixtures/grammar/` with the exact commits listed in `extension.toml`.
 
-To test grammars locally:
+To test locally:
 
 ```bash
-# Install tree-sitter-cli
-npm install -g tree-sitter-cli
-
-# Run tests for Bicep grammar
-cd grammars/bicep && tree-sitter test
-
-# Run tests for Bicep Params grammar
-cd grammars/bicep_params && tree-sitter test
+npm install
+npm run test:grammars
 ```
 
-The test corpus files are in `grammars/*/test/corpus/tests.txt` and are automatically included in the CI pipeline. For grammar changes, tests should be added/updated in the upstream grammar repositories.
+The deeper corpus tests still live in the upstream grammar repositories. For parser changes, add or update corpus coverage there as well.
 
 ## Files to Never Edit
 
@@ -189,7 +183,7 @@ Before submitting changes, all of these must pass:
 - `cargo build --target wasm32-wasip2` — must compile
 - `cargo fmt --check` — must pass
 - `cargo clippy --target wasm32-wasip2 -- -D warnings` — must pass
-- `npm test` — validates version bump logic
+- `npm test` — validates version bump logic and grammar fixtures
 
 ## Common Agent Tasks
 
@@ -221,7 +215,7 @@ Grammar source repos:
 - [tree-sitter-bicep](https://github.com/oWretch/tree-sitter-bicep)
 - [tree-sitter-bicep-params](https://github.com/oWretch/tree-sitter-bicep-params)
 
-Grammar tests are maintained in those upstream repos. After updating the commit hash in `extension.toml`, the CI workflow will automatically run the tree-sitter corpus tests.
+After updating the commit hash in `extension.toml`, run `npm run test:grammars` to validate the pinned revisions against this repository's fixture files. Parser corpus tests still belong in the upstream grammar repositories.
 
 ### Adding a New Language Configuration Option
 

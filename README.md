@@ -8,6 +8,14 @@ This extension adds support for
 [Zed](https://zed.dev/). This includes syntax highlighting, IntelliSense, and
 error checking for both Bicep and Bicep Parameter files.
 
+## Grammar validation fixtures
+
+The repository includes fixture files under `fixtures/grammar/` that cover
+representative `.bicep` and `.bicepparam` syntax, including language features
+that are pinned from the upstream tree-sitter grammar repositories. `npm test`
+runs a smoke test that checks those fixtures parse cleanly with the exact
+grammar commits referenced in `extension.toml`.
+
 ## Pre-requisites
 
 The Bicep language server is built in .NET, so requires the .NET runtime to be

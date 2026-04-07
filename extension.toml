@@ -10,11 +10,11 @@ authors = [ "Jerome Brown <Jerome@SoliDeoGloria.tech>" ]
 
 [grammars.bicep]
 repository = "https://github.com/oWretch/tree-sitter-bicep"
-commit = "8288b2b7a0313842d3b2997b36bf1cbd2b60abc0"
+commit = "fbf0023708b6cecbdc97a22891344a75dcd9076d"
 
 [grammars.bicep_params]
 repository = "https://github.com/oWretch/tree-sitter-bicep-params"
-commit = "119641e7ae85ea1b201cd2c5f909a017fcd8ad68"
+commit = "9e109ec73422ea8df82bffa315cce7d9ddce8cc1"
 
 [language_servers.bicep-ls]
 name = "Bicep Language Server"
