@@ -23,6 +23,11 @@ The Bicep language server is built in .NET, so requires the .NET runtime to be
 installed. [.NET 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) or
 later is required. 8.0 is recommended as the latest LTS version.
 
+For local extension development, this repository includes a `rust-toolchain.toml`
+that pins the Rust toolchain and requests the `wasm32-wasip2` target used by
+Zed extension builds. If your Rust installation is not managed by `rustup`, you
+may still need to run `rustup target add wasm32-wasip2` manually.
+
 ## Architecture
 
 See [AGENTS.md](AGENTS.md) for a complete guide to the project structure,

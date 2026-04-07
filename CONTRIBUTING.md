@@ -5,7 +5,7 @@ Thanks for your interest in contributing to the Bicep extension for Zed!
 ## Prerequisites
 
 - **Rust** toolchain: install via [rustup](https://rustup.rs/)
-- **WASM target**: `rustup target add wasm32-wasip2`
+- **WASM target**: provided automatically via `rust-toolchain.toml` for rustup-managed installs; if needed, run `rustup target add wasm32-wasip2`
 - **Node.js** (22+): for semantic-release tooling
 - **pre-commit**: `pip install pre-commit` or `brew install pre-commit`
 
@@ -15,6 +15,9 @@ Thanks for your interest in contributing to the Bicep extension for Zed!
 # Clone the repository
 git clone https://github.com/oWretch/zed-extension-bicep.git
 cd zed-extension-bicep
+
+# Ensure the pinned Rust toolchain and WASI target are available
+rustup show
 
 # Install Node.js dependencies (for semantic-release)
 npm install
