@@ -85,7 +85,7 @@ Pull requests automatically trigger CI checks:
 
 - **Rust formatting & linting** — `cargo fmt --check` and `cargo clippy`
 - **WASM build** — `cargo build --target wasm32-wasip2`
-- **JavaScript checks** — `npm test` validates semantic-release version bumps and parses repo fixtures with the pinned grammar commits
+- **JavaScript checks** — `npm test` validates semantic-release version bumps, parses repo fixtures, and checks the Zed query files against the pinned grammar commits
 - **Conventional commits** — PR title must follow format (e.g., `feat:`, `fix:`)
 
 All checks must pass before merge. No secrets are exposed during PR ci runs — the workflow uses strict read-only permissions (`contents: read`).
@@ -104,8 +104,9 @@ npm run test:grammars
 
 The sample files live under `fixtures/grammar/` and are useful both for CI
 smoke testing and for opening representative files in Zed during manual checks.
-Grammar changes should still be made in the upstream repos and then referenced
-by commit hash in `extension.toml`.
+The test also validates the query files in `languages/` against the pinned
+grammar revisions. Grammar changes should still be made in the upstream repos
+and then referenced by commit hash in `extension.toml`.
 
 ## Version Management
 

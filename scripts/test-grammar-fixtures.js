@@ -8,6 +8,7 @@ const path = require("node:path");
 const repoRoot = path.resolve(__dirname, "..");
 const extensionTomlPath = path.join(repoRoot, "extension.toml");
 const fixtureRoot = path.join(repoRoot, "fixtures", "grammar");
+const languageRoot = path.join(repoRoot, "languages");
 const treeSitterBinary = path.join(
   repoRoot,
   "node_modules",
@@ -19,23 +20,36 @@ const grammars = [
   {
     extension: ".bicep",
     fixtureDir: path.join(fixtureRoot, "bicep"),
+    queryDir: path.join(languageRoot, "bicep"),
     name: "bicep",
     section: "grammars.bicep",
   },
   {
     extension: ".bicepparam",
     fixtureDir: path.join(fixtureRoot, "bicep_params"),
+    queryDir: path.join(languageRoot, "bicep_params"),
     name: "bicep_params",
     section: "grammars.bicep_params",
   },
 ];
 
 function run(command, args, options = {}) {
-  return childProcess.execFileSync(command, args, {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"],
-    ...options,
-  });
+  try {
+    return childProcess.execFileSync(command, args, {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      ...options,
+    });
+  } catch (error) {
+    const stdout = error.stdout || "";
+    const stderr = error.stderr || "";
+    const renderedArgs = args.map((arg) => JSON.stringify(arg)).join(" ");
+    throw new Error(
+      [`Command failed: ${command} ${renderedArgs}`, stdout.trim(), stderr.trim()]
+        .filter(Boolean)
+        .join("\n")
+    );
+  }
 }
 
 function sectionValue(contents, section, key) {
@@ -93,6 +107,14 @@ function copyFixtures(files, destinationDir) {
   });
 }
 
+function listQueries(dir) {
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".scm"))
+    .map((entry) => path.join(dir, entry.name))
+    .sort();
+}
+
 function assertNoErrors(output, grammarName) {
   if (/\b(ERROR|MISSING)\b/.test(output)) {
     throw new Error(`${grammarName} fixtures produced parse errors:\n${output}`);
@@ -114,9 +136,14 @@ function main() {
       const repository = sectionValue(extensionToml, grammar.section, "repository");
       const commit = sectionValue(extensionToml, grammar.section, "commit");
       const fixtures = listFixtures(grammar.fixtureDir, grammar.extension);
+      const queries = listQueries(grammar.queryDir);
 
       if (fixtures.length === 0) {
         throw new Error(`No fixtures found for ${grammar.name} in ${grammar.fixtureDir}`);
+      }
+
+      if (queries.length === 0) {
+        throw new Error(`No queries found for ${grammar.name} in ${grammar.queryDir}`);
       }
 
       const checkoutDir = path.join(tempRoot, grammar.name);
@@ -131,8 +158,22 @@ function main() {
       );
 
       assertNoErrors(parseOutput, grammar.name);
+
+      for (const query of queries) {
+        run(
+          treeSitterBinary,
+          [
+            "query",
+            "--quiet",
+            query,
+            ...copiedFixtures.map((file) => path.relative(checkoutDir, file)),
+          ],
+          { cwd: checkoutDir }
+        );
+      }
+
       console.log(
-        `Parsed ${copiedFixtures.length} ${grammar.name} fixture(s) with ${repository}@${commit}.`
+        `Parsed ${copiedFixtures.length} ${grammar.name} fixture(s) and validated ${queries.length} query file(s) with ${repository}@${commit}.`
       );
     }
   } finally {

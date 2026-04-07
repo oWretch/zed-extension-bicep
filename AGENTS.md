@@ -108,11 +108,11 @@ npm run release:dry-run-local
 
 ### No Unit Tests
 
-The Rust code currently has no unit tests. `npm test` validates the semantic-release version bump logic and smoke-tests representative `.bicep` and `.bicepparam` fixtures against the pinned tree-sitter grammar commits from `extension.toml`.
+The Rust code currently has no unit tests. `npm test` validates the semantic-release version bump logic, smoke-tests representative `.bicep` and `.bicepparam` fixtures against the pinned tree-sitter grammar commits from `extension.toml`, and compiles the Zed query files in `languages/` against those same grammar revisions.
 
 ### Grammar Testing
 
-This repository smoke-tests the pinned upstream grammar revisions by parsing the files under `fixtures/grammar/` with the exact commits listed in `extension.toml`.
+This repository smoke-tests the pinned upstream grammar revisions by parsing the files under `fixtures/grammar/` with the exact commits listed in `extension.toml` and validating the query files under `languages/` against those grammars.
 
 To test locally:
 
@@ -183,7 +183,7 @@ Before submitting changes, all of these must pass:
 - `cargo build --target wasm32-wasip2` — must compile
 - `cargo fmt --check` — must pass
 - `cargo clippy --target wasm32-wasip2 -- -D warnings` — must pass
-- `npm test` — validates version bump logic and grammar fixtures
+- `npm test` — validates version bump logic, grammar fixtures, and query files
 
 ## Common Agent Tasks
 
@@ -215,7 +215,7 @@ Grammar source repos:
 - [tree-sitter-bicep](https://github.com/oWretch/tree-sitter-bicep)
 - [tree-sitter-bicep-params](https://github.com/oWretch/tree-sitter-bicep-params)
 
-After updating the commit hash in `extension.toml`, run `npm run test:grammars` to validate the pinned revisions against this repository's fixture files. Parser corpus tests still belong in the upstream grammar repositories.
+After updating the commit hash in `extension.toml`, run `npm run test:grammars` to validate the pinned revisions against this repository's fixture files and query files. Parser corpus tests still belong in the upstream grammar repositories.
 
 ### Adding a New Language Configuration Option
 
