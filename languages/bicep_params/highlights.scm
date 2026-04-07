@@ -92,6 +92,8 @@
 
 ; Keywords
 [
+  "extends"
+  "none"
   "param"
   "type"
   "var"
@@ -120,6 +122,7 @@
   "="
   "!"
   ".?"
+  "..."
 ] @operator
 
 (subscript_expression
