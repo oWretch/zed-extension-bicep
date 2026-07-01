@@ -1,27 +1,11 @@
-[
-  (array)
-  (object)
-] @indent.begin
+(object
+  "}" @end) @indent
 
-"}" @indent.end
+(array
+  "]" @end) @indent
 
-[
-  "{"
-  "}"
-] @indent.branch
+(arguments
+  ")" @end) @indent
 
-[
-  "["
-  "]"
-] @indent.branch
-
-[
-  "("
-  ")"
-] @indent.branch
-
-[
-  (ERROR)
-  (comment)
-  (diagnostic_comment)
-] @indent.auto
+(parameters
+  ")" @end) @indent
