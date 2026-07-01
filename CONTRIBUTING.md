@@ -5,7 +5,7 @@ Thanks for your interest in contributing to the Bicep extension for Zed!
 ## Prerequisites
 
 - **Rust** toolchain: install via [rustup](https://rustup.rs/)
-- **WASM target**: provided automatically via `rust-toolchain.toml` for rustup-managed installs; if needed, run `rustup target add wasm32-wasip2`
+- **WASM target**: `rustup target add wasm32-wasip2`
 - **Node.js** (22+): for semantic-release tooling
 - **pre-commit**: `pip install pre-commit` or `brew install pre-commit`
 
@@ -15,9 +15,6 @@ Thanks for your interest in contributing to the Bicep extension for Zed!
 # Clone the repository
 git clone https://github.com/oWretch/zed-extension-bicep.git
 cd zed-extension-bicep
-
-# Ensure the pinned Rust toolchain and WASI target are available
-rustup show
 
 # Install Node.js dependencies (for semantic-release)
 npm install
@@ -88,28 +85,26 @@ Pull requests automatically trigger CI checks:
 
 - **Rust formatting & linting** — `cargo fmt --check` and `cargo clippy`
 - **WASM build** — `cargo build --target wasm32-wasip2`
-- **JavaScript checks** — `npm test` validates semantic-release version bumps, parses repo fixtures, and checks the Zed query files against the pinned grammar commits
+- **Grammar validation** — Grammar fixture smoke-tests via `npm run test:grammars`
+- **Version update logic** — `npm test` (validates semantic-release version bump and grammar fixtures)
 - **Conventional commits** — PR title must follow format (e.g., `feat:`, `fix:`)
 
 All checks must pass before merge. No secrets are exposed during PR ci runs — the workflow uses strict read-only permissions (`contents: read`).
 
 ## Grammar Testing
 
-If you update the pinned tree-sitter grammar commits in `extension.toml`, run the fixture smoke tests locally:
+`npm test` runs grammar fixture smoke-tests against the pinned commit from `extension.toml`. These parse files under `fixtures/grammar/` and validate the Zed query files (`.scm`) against the same grammar revision.
+
+To run fixture tests locally:
 
 ```bash
-# Install dependencies
 npm install
-
-# Parse the repo fixtures with the pinned grammar commits
 npm run test:grammars
 ```
 
-The sample files live under `fixtures/grammar/` and are useful both for CI
-smoke testing and for opening representative files in Zed during manual checks.
-The test also validates the query files in `languages/` against the pinned
-grammar revisions. Grammar changes should still be made in the upstream repos
-and then referenced by commit hash in `extension.toml`.
+If you update the grammar commit in `extension.toml`, update the fixture files under `fixtures/grammar/` if needed and re-run `npm run test:grammars`.
+
+Note: Grammar changes should be made in the upstream repos and then referenced by commit hash in `extension.toml`.
 
 ## Version Management
 
@@ -117,10 +112,9 @@ Versions in `Cargo.toml` and `extension.toml` are managed by semantic-release. *
 
 ## Tree-sitter Grammars
 
-The grammars in `grammars/` are vendored from upstream repositories:
+The grammar in `grammars/` is vendored from an upstream repository:
 
 - [tree-sitter-bicep](https://github.com/oWretch/tree-sitter-bicep)
-- [tree-sitter-bicep-params](https://github.com/oWretch/tree-sitter-bicep-params)
 
 To update a grammar, change the `commit` hash in `extension.toml` under the relevant `[grammars.*]` section. Do not edit files under `grammars/*/src/` — they are generated.
 

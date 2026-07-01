@@ -29,7 +29,7 @@ const grammars = [
     fixtureDir: path.join(fixtureRoot, "bicep_params"),
     queryDir: path.join(languageRoot, "bicep_params"),
     name: "bicep_params",
-    section: "grammars.bicep_params",
+    section: "grammars.bicep",
   },
 ];
 
@@ -38,6 +38,7 @@ function run(command, args, options = {}) {
     return childProcess.execFileSync(command, args, {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
+      timeout: 60_000,
       ...options,
     });
   } catch (error) {
@@ -147,8 +148,11 @@ function main() {
       }
 
       const checkoutDir = path.join(tempRoot, grammar.name);
-      run("git", ["clone", "--quiet", repository, checkoutDir]);
-      run("git", ["-C", checkoutDir, "checkout", "--quiet", commit]);
+      fs.mkdirSync(checkoutDir, { recursive: true });
+      run("git", ["init", "--quiet", checkoutDir]);
+      run("git", ["-C", checkoutDir, "remote", "add", "origin", repository]);
+      run("git", ["-C", checkoutDir, "fetch", "--quiet", "--depth", "1", "origin", commit]);
+      run("git", ["-C", checkoutDir, "checkout", "--quiet", "--detach", "FETCH_HEAD"]);
 
       const copiedFixtures = copyFixtures(fixtures, path.join(checkoutDir, "zed-fixtures"));
       const parseOutput = run(

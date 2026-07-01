@@ -24,8 +24,7 @@ zed-extension-bicep/
 │   │   └── brackets.scm       #   Bracket matching queries
 │   └── bicep_params/          # Language config for .bicepparam files (same structure)
 ├── grammars/
-│   ├── bicep/                 # Tree-sitter grammar for Bicep (DO NOT HAND-EDIT src/)
-│   └── bicep_params/          # Tree-sitter grammar for Bicep Params (DO NOT HAND-EDIT src/)
+│   └── bicep/                 # Tree-sitter grammar for Bicep and Bicep Params (DO NOT HAND-EDIT src/)
 ├── .github/
 │   └── workflows/
 │       ├── release.yaml       # Automated release via semantic-release
@@ -63,7 +62,7 @@ The `grammars/` directory contains vendored tree-sitter grammars:
 - **`grammars/*/grammar.js`** — The grammar definition. Edit this to change parsing rules.
 - **`grammars/*/test/corpus/`** — Tree-sitter test cases.
 
-The upstream grammar repos are referenced by commit hash in `extension.toml` under `[grammars.bicep]` and `[grammars.bicep_params]`.
+The upstream grammar repo is referenced by commit hash in `extension.toml` under `[grammars.bicep]`.
 
 ### Language Queries (`languages/`)
 
@@ -100,7 +99,6 @@ npm test
 
 # Test tree-sitter grammars (requires: npm install -g tree-sitter-cli)
 cd grammars/bicep && tree-sitter test
-cd grammars/bicep_params && tree-sitter test
 
 # Dry-run a release locally
 npm run release:dry-run-local
@@ -201,7 +199,6 @@ cargo clippy --target wasm32-wasip2 -- -D warnings
 Edit `languages/bicep/highlights.scm` (or `languages/bicep_params/highlights.scm`). These use tree-sitter query syntax. Reference the grammar's `node-types.json` for available node types:
 
 - `grammars/bicep/src/node-types.json`
-- `grammars/bicep_params/src/node-types.json`
 
 ### Adding Outline Support for New Constructs
 
@@ -209,13 +206,12 @@ Edit `languages/bicep/outline.scm`. Each outline entry needs `@item` (the whole 
 
 ### Updating Tree-sitter Grammar Commit
 
-In `extension.toml`, update the `commit` field under `[grammars.bicep]` or `[grammars.bicep_params]` to point to a new commit in the upstream grammar repo. Then rebuild — Zed fetches and builds the grammar from the specified commit.
+In `extension.toml`, update the `commit` field under `[grammars.bicep]` to point to a new commit in the upstream grammar repo. Then rebuild — Zed fetches and builds the grammar from the specified commit.
 
 Grammar source repos:
 - [tree-sitter-bicep](https://github.com/oWretch/tree-sitter-bicep)
-- [tree-sitter-bicep-params](https://github.com/oWretch/tree-sitter-bicep-params)
 
-After updating the commit hash in `extension.toml`, run `npm run test:grammars` to validate the pinned revisions against this repository's fixture files and query files. Parser corpus tests still belong in the upstream grammar repositories.
+Grammar tests are maintained in those upstream repos. After updating the commit hash in `extension.toml`, run `npm run test:grammars` to validate the pinned revisions against this repository's fixture files and query files. Parser corpus tests still belong in the upstream grammar repositories.
 
 ### Adding a New Language Configuration Option
 

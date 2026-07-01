@@ -12,7 +12,7 @@ updates:
       - "oWretch"
     labels:
       - "dependencies"
-      - "github-actions"
+      - "github_actions"
     commit-message:
       prefix: "chore(deps-actions)"
   - package-ecosystem: "npm"
