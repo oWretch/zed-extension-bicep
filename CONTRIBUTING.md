@@ -85,7 +85,7 @@ Pull requests automatically trigger CI checks:
 
 - **Rust formatting & linting** — `cargo fmt --check` and `cargo clippy`
 - **WASM build** — `cargo build --target wasm32-wasip2`
-- **Grammar validation** — Tree-sitter corpus tests for Bicep and Bicep Params grammars
+- **Grammar validation** — Tree-sitter corpus tests for the Bicep grammar
 - **Version update logic** — `npm test` (validates semantic-release version bump)
 - **Conventional commits** — PR title must follow format (e.g., `feat:`, `fix:`)
 
@@ -93,7 +93,7 @@ All checks must pass before merge. No secrets are exposed during PR ci runs — 
 
 ## Grammar Testing
 
-If you modify the tree-sitter grammars ([`grammars/bicep/grammar.js`](grammars/bicep/grammar.js) or [`grammars/bicep_params/grammar.js`](grammars/bicep_params/grammar.js)), test locally:
+If you modify the tree-sitter grammar ([`grammars/bicep/grammar.js`](grammars/bicep/grammar.js)), test locally:
 
 ```bash
 # Install tree-sitter-cli
@@ -101,7 +101,6 @@ npm install -g tree-sitter-cli
 
 # Test the grammar against its corpus
 cd grammars/bicep && tree-sitter test
-cd grammars/bicep_params && tree-sitter test
 ```
 
 Note: Grammar changes should be made in the upstream repos and then referenced by commit hash in `extension.toml`.
@@ -112,10 +111,9 @@ Versions in `Cargo.toml` and `extension.toml` are managed by semantic-release. *
 
 ## Tree-sitter Grammars
 
-The grammars in `grammars/` are vendored from upstream repositories:
+The grammar in `grammars/` is vendored from an upstream repository:
 
 - [tree-sitter-bicep](https://github.com/oWretch/tree-sitter-bicep)
-- [tree-sitter-bicep-params](https://github.com/oWretch/tree-sitter-bicep-params)
 
 To update a grammar, change the `commit` hash in `extension.toml` under the relevant `[grammars.*]` section. Do not edit files under `grammars/*/src/` — they are generated.
 
