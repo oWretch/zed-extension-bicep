@@ -89,8 +89,9 @@ impl BicepExtension {
                 language_server_id,
                 &zed::LanguageServerInstallationStatus::Downloading,
             );
-            fs::create_dir_all(install_root)
-                .map_err(|e| format!("failed to create installation directory {install_root}: {e}"))?;
+            fs::create_dir_all(install_root).map_err(|e| {
+                format!("failed to create installation directory {install_root}: {e}")
+            })?;
             zed::download_file(
                 &asset.download_url,
                 &version_dir,
@@ -99,8 +100,9 @@ impl BicepExtension {
             .map_err(|err| format!("download error {}", err))?;
 
             // Clean up old versions
-            let entries = fs::read_dir(install_root)
-                .map_err(|e| format!("failed to list installation directory {install_root}: {e}"))?;
+            let entries = fs::read_dir(install_root).map_err(|e| {
+                format!("failed to list installation directory {install_root}: {e}")
+            })?;
             for entry in entries {
                 let entry = entry.map_err(|e| format!("failed to load directory entry {e}"))?;
                 let file_type = entry
@@ -115,7 +117,10 @@ impl BicepExtension {
                 if entry_name.starts_with("bicep-langserver-") && entry_name != version_name {
                     let path = entry.path();
                     fs::remove_dir_all(&path).map_err(|e| {
-                        format!("failed to remove old language server directory {}: {e}", path.display())
+                        format!(
+                            "failed to remove old language server directory {}: {e}",
+                            path.display()
+                        )
                     })?;
                 }
             }

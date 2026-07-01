@@ -1,6 +1,6 @@
 id = "bicep_params"
 name = "Bicep Parameters"
-grammar = "bicep_params"
+grammar = "bicep"
 path_suffixes = ["bicepparam"]
 line_comments = ["// "]
 block_comments = ["/*", "*/"]
