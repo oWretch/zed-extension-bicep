@@ -64,14 +64,18 @@ impl BicepExtension {
         };
         if let Ok(output) = version_cmd.output() {
             if let Ok(version) = String::from_utf8(output.stdout) {
-                let major: u32 = version.trim().split('.').next()
-                    .and_then(|s| s.parse().ok())
-                    .unwrap_or(u32::MAX); // ponytail: MAX passes unparseable versions through
-                if major < 8 {
-                    return Err(format!(
-                        "dotnet 8.0+ required (found {}). Download from https://dotnet.microsoft.com/download",
-                        version.trim()
-                    ));
+                let major = version
+                    .trim()
+                    .split('.')
+                    .next()
+                    .and_then(|s| s.parse::<u32>().ok());
+                if let Some(major) = major {
+                    if major < 8 {
+                        return Err(format!(
+                            "dotnet 8.0+ required (found {}). Download from https://dotnet.microsoft.com/download",
+                            version.trim()
+                        ));
+                    }
                 }
             }
         }
