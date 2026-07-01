@@ -45,12 +45,41 @@ impl zed::Extension for BicepExtension {
 
 impl BicepExtension {
     fn dotnet_binary_path(&mut self, worktree: &zed::Worktree) -> Result<String> {
-        let dotnet_path = match &self.dotnet_binary_path {
-            Some(path) if fs::metadata(path).is_ok_and(|stat| stat.is_file()) => path.clone(),
-            _ => worktree
-                .which("dotnet")
-                .ok_or("dotnet not found. Install the .NET SDK 8.0+ from https://dotnet.microsoft.com/download. Note: the standalone Bicep CLI is not sufficient.")?,
+        // Return cached path — skip re-check on every LSP request.
+        if let Some(path) = &self.dotnet_binary_path {
+            if fs::metadata(path).is_ok_and(|stat| stat.is_file()) {
+                return Ok(path.clone());
+            }
+        }
+
+        let dotnet_path = worktree
+            .which("dotnet")
+            .ok_or("dotnet not found. Install the .NET SDK 8.0+ from https://dotnet.microsoft.com/download. Note: the standalone Bicep CLI is not sufficient.")?;
+
+        // Verify dotnet >= 8.0. Skip silently if the version check fails (unusual installs).
+        let mut version_cmd = zed::Command {
+            command: dotnet_path.clone(),
+            args: vec!["--version".to_string()],
+            env: Default::default(),
         };
+        if let Ok(output) = version_cmd.output() {
+            if let Ok(version) = String::from_utf8(output.stdout) {
+                let major = version
+                    .trim()
+                    .split('.')
+                    .next()
+                    .and_then(|s| s.parse::<u32>().ok());
+                if let Some(major) = major {
+                    if major < 8 {
+                        return Err(format!(
+                            "dotnet 8.0+ required (found {}). Download from https://dotnet.microsoft.com/download",
+                            version.trim()
+                        ));
+                    }
+                }
+            }
+        }
+
         self.dotnet_binary_path = Some(dotnet_path.clone());
         Ok(dotnet_path)
     }
