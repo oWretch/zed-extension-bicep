@@ -22,7 +22,7 @@ var mergedTags = {
 
 var numbers = [1, 2, 3]
 var lastNumber = numbers[^1]
-var maybeLastNumber = numbers[?^1]
+var maybeSecondNumber = numbers[?1]
 var positiveCount = +length(numbers)
 
 resource stg 'Microsoft.Storage/storageAccounts@2023-05-01' = {
