@@ -16,6 +16,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    environment: zed-release
     permissions:
       contents: write
       issues: write
@@ -26,6 +27,7 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -36,17 +38,64 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Release
-        id: release
+      - name: Determine next release version
+        id: release_meta
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: |
+          LOG_FILE="$RUNNER_TEMP/semantic-release.log"
+          npx semantic-release --dry-run --no-ci 2>&1 | tee "$LOG_FILE"
+
+          VERSION=$(sed -n 's/.*The next release version is \([0-9][0-9.]*\).*/\1/p' "$LOG_FILE" | tail -n 1)
+
+          if [ -z "$VERSION" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "commit_message=chore(release): $VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Update versions
+        if: steps.release_meta.outputs.changed == 'true'
+        run: |
+          VERSION="${{ steps.release_meta.outputs.version }}"
+          node -e "const fs = require('fs'); const cargo = fs.readFileSync('Cargo.toml', 'utf8').replace(/^version = \\\".*\\\"/m, \`version = \\\"${VERSION}\\\"\`); fs.writeFileSync('Cargo.toml', cargo); const ext = fs.readFileSync('extension.toml', 'utf8').replace(/^version = \\\".*\\\"/m, \`version = \\\"${VERSION}\\\"\`); fs.writeFileSync('extension.toml', ext);"
+
+      - name: Create signed release commit and tag
+        if: steps.release_meta.outputs.changed == 'true'
+        id: signed_release
+        uses: oWretch/create-verified-commits@14dc164a60636d571258c5237e35de35c5930a08 # v1.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: ${{ steps.release_meta.outputs.commit_message }}
+          tag-name: ${{ steps.release_meta.outputs.tag }}
+          tag-message: Release ${{ steps.release_meta.outputs.tag }}
+          fail-on-empty: false
+          files: |
+            Cargo.toml
+            extension.toml
+
+      - name: Create GitHub release
+        if: steps.release_meta.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.release_meta.outputs.tag }}"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG already exists"
+          else
+            gh release create "$TAG" --title "$TAG" --generate-notes
+          fi
 
       - name: Publish extension
+        if: steps.release_meta.outputs.changed == 'true'
         uses: oWretch/zed-extension-action@46431e104acab5f5c7e88bab21dd03c62398b6a2 # default branch head (no releases/tags)
         with:
           extension-name: bicep
           push-to: oWretch/zed-extensions
-          tag: v${{ steps.release.outputs.ReleaseVersion }}
+          tag: ${{ steps.release_meta.outputs.tag }}
         env:
           COMMITTER_TOKEN: ${{ secrets.EXTENSION_PUBLISH_TOKEN }}
