@@ -65,9 +65,11 @@ jobs:
           node -e "const fs = require('fs'); const cargo = fs.readFileSync('Cargo.toml', 'utf8').replace(/^version = \\\".*\\\"/m, \`version = \\\"${VERSION}\\\"\`); fs.writeFileSync('Cargo.toml', cargo); const ext = fs.readFileSync('extension.toml', 'utf8').replace(/^version = \\\".*\\\"/m, \`version = \\\"${VERSION}\\\"\`); fs.writeFileSync('extension.toml', ext);"
 
       - name: Create GitHub App token (optional)
-        if: steps.release_meta.outputs.changed == 'true' && vars.APP_CLIENT_ID != '' && secrets.APP_PRIVATE_KEY != ''
+        if: steps.release_meta.outputs.changed == 'true' && vars.APP_CLIENT_ID != '' && env.APP_PRIVATE_KEY != ''
         id: app_token
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        env:
+          APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
         with:
           client-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
