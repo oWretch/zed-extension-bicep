@@ -53,10 +53,12 @@ jobs:
             exit 0
           fi
 
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-          echo "commit_message=chore(release): $VERSION" >> "$GITHUB_OUTPUT"
+          {
+            echo "changed=true"
+            echo "version=$VERSION"
+            echo "tag=v$VERSION"
+            echo "commit_message=chore(release): $VERSION"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Update versions
         if: steps.release_meta.outputs.changed == 'true'
