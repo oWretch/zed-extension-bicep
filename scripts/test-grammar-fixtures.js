@@ -22,6 +22,7 @@ const grammars = [
     fixtureDir: path.join(fixtureRoot, "bicep"),
     queryDir: path.join(languageRoot, "bicep"),
     name: "bicep",
+    grammarPath: "bicep",
     section: "grammars.bicep",
   },
   {
@@ -29,6 +30,7 @@ const grammars = [
     fixtureDir: path.join(fixtureRoot, "bicep_params"),
     queryDir: path.join(languageRoot, "bicep_params"),
     name: "bicep_params",
+    grammarPath: "bicep_params",
     section: "grammars.bicep",
   },
 ];
@@ -148,6 +150,7 @@ function main() {
       }
 
       const checkoutDir = path.join(tempRoot, grammar.name);
+      const grammarDir = path.join(checkoutDir, grammar.grammarPath);
       fs.mkdirSync(checkoutDir, { recursive: true });
       run("git", ["init", "--quiet", checkoutDir]);
       run("git", ["-C", checkoutDir, "remote", "add", "origin", repository]);
@@ -155,10 +158,11 @@ function main() {
       run("git", ["-C", checkoutDir, "checkout", "--quiet", "--detach", "FETCH_HEAD"]);
 
       const copiedFixtures = copyFixtures(fixtures, path.join(checkoutDir, "zed-fixtures"));
+      const fixturePaths = copiedFixtures.map((file) => path.relative(grammarDir, file));
       const parseOutput = run(
         treeSitterBinary,
-        ["parse", ...copiedFixtures.map((file) => path.relative(checkoutDir, file))],
-        { cwd: checkoutDir }
+        ["parse", ...fixturePaths],
+        { cwd: grammarDir }
       );
 
       assertNoErrors(parseOutput, grammar.name);
@@ -170,9 +174,9 @@ function main() {
             "query",
             "--quiet",
             query,
-            ...copiedFixtures.map((file) => path.relative(checkoutDir, file)),
+            ...fixturePaths,
           ],
-          { cwd: checkoutDir }
+          { cwd: grammarDir }
         );
       }
 

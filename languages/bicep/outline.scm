@@ -1,7 +1,10 @@
 ; Bicep outline support for Zed editor
 ; Comments
 (comment) @annotation
-(diagnostic_comment) @annotation
+(directive_statement) @annotation
+(disable_next_line_directive) @annotation
+(disable_diagnostics_directive) @annotation
+(restore_diagnostics_directive) @annotation
 
 ; Parameter declarations
 (parameter_declaration
