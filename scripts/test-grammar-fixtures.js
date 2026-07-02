@@ -31,7 +31,7 @@ const grammars = [
     queryDir: path.join(languageRoot, "bicep_params"),
     name: "bicep_params",
     grammarPath: "bicep_params",
-    section: "grammars.bicep",
+    section: "grammars.bicep_params",
   },
 ];
 
