@@ -3,8 +3,6 @@
 
 ; Comments
 (comment) @annotation
-
-; Diagnostic comments
 (diagnostic_comment) @annotation
 
 ; Parameters

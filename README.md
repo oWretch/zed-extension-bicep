@@ -8,11 +8,25 @@ This extension adds support for
 [Zed](https://zed.dev/). This includes syntax highlighting, IntelliSense, and
 error checking for both Bicep and Bicep Parameter files.
 
+## Grammar validation fixtures
+
+The repository includes fixture files under `fixtures/grammar/` that cover
+representative `.bicep` and `.bicepparam` syntax, including language features
+that are pinned from the upstream tree-sitter grammar repositories. `npm test`
+runs smoke tests that check those fixtures parse cleanly and that the Zed query
+files under `languages/` compile against the exact grammar commits referenced in
+`extension.toml`.
+
 ## Pre-requisites
 
 The Bicep language server is built in .NET, so requires the .NET runtime to be
 installed. [.NET 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) or
 later is required. 8.0 is recommended as the latest LTS version.
+
+For local extension development, this repository includes a `rust-toolchain.toml`
+that pins the Rust toolchain and requests the `wasm32-wasip2` target used by
+Zed extension builds. If your Rust installation is not managed by `rustup`, you
+may still need to run `rustup target add wasm32-wasip2` manually.
 
 ## Architecture
 

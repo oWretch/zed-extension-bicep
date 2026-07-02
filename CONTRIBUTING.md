@@ -85,23 +85,24 @@ Pull requests automatically trigger CI checks:
 
 - **Rust formatting & linting** — `cargo fmt --check` and `cargo clippy`
 - **WASM build** — `cargo build --target wasm32-wasip2`
-- **Grammar validation** — Tree-sitter corpus tests for the Bicep grammar
-- **Version update logic** — `npm test` (validates semantic-release version bump)
+- **Grammar validation** — Grammar fixture smoke-tests via `npm run test:grammars`
+- **Version update logic** — `npm test` (validates semantic-release version bump and grammar fixtures)
 - **Conventional commits** — PR title must follow format (e.g., `feat:`, `fix:`)
 
 All checks must pass before merge. No secrets are exposed during PR ci runs — the workflow uses strict read-only permissions (`contents: read`).
 
 ## Grammar Testing
 
-If you modify the tree-sitter grammar ([`grammars/bicep/grammar.js`](grammars/bicep/grammar.js)), test locally:
+`npm test` runs grammar fixture smoke-tests against the pinned commit from `extension.toml`. These parse files under `fixtures/grammar/` and validate the Zed query files (`.scm`) against the same grammar revision.
+
+To run fixture tests locally:
 
 ```bash
-# Install tree-sitter-cli
-npm install -g tree-sitter-cli
-
-# Test the grammar against its corpus
-cd grammars/bicep && tree-sitter test
+npm install
+npm run test:grammars
 ```
+
+If you update the grammar commit in `extension.toml`, update the fixture files under `fixtures/grammar/` if needed and re-run `npm run test:grammars`.
 
 Note: Grammar changes should be made in the upstream repos and then referenced by commit hash in `extension.toml`.
 

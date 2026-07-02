@@ -157,6 +157,8 @@
   "output"
   "param"
   "resource"
+  "resourceInput"
+  "resourceOutput"
   "extension"
   "existing"
   "targetScope"
@@ -192,10 +194,14 @@
   "="
   "!"
   ".?"
+  "..."
 ] @operator
 
 (subscript_expression
   "?" @operator)
+
+(subscript_expression
+  "^" @operator)
 
 (nullable_type
   "?" @operator)
@@ -254,5 +260,8 @@
 ; Comments
 [
   (comment)
-  (diagnostic_comment)
+  (directive_statement)
+  (disable_next_line_directive)
+  (disable_diagnostics_directive)
+  (restore_diagnostics_directive)
 ] @comment @spell
