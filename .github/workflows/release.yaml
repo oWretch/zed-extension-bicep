@@ -64,12 +64,35 @@ jobs:
           VERSION="${{ steps.release_meta.outputs.version }}"
           node -e "const fs = require('fs'); const cargo = fs.readFileSync('Cargo.toml', 'utf8').replace(/^version = \\\".*\\\"/m, \`version = \\\"${VERSION}\\\"\`); fs.writeFileSync('Cargo.toml', cargo); const ext = fs.readFileSync('extension.toml', 'utf8').replace(/^version = \\\".*\\\"/m, \`version = \\\"${VERSION}\\\"\`); fs.writeFileSync('extension.toml', ext);"
 
+      - name: Create GitHub App token (optional)
+        if: steps.release_meta.outputs.changed == 'true' && vars.APP_CLIENT_ID != ''
+        id: app_token
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Resolve release token
+        if: steps.release_meta.outputs.changed == 'true'
+        id: release_token
+        run: |
+          if [ -n "${{ steps.app_token.outputs.token }}" ]; then
+            TOKEN="${{ steps.app_token.outputs.token }}"
+            echo "Using GitHub App token for release commit"
+          else
+            TOKEN="${{ github.token }}"
+            echo "Using default github.token for release commit"
+          fi
+
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
       - name: Create signed release commit and tag
         if: steps.release_meta.outputs.changed == 'true'
         id: signed_release
         uses: oWretch/create-verified-commits@14dc164a60636d571258c5237e35de35c5930a08 # v1.0.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.release_token.outputs.token }}
           commit-message: ${{ steps.release_meta.outputs.commit_message }}
           tag-name: ${{ steps.release_meta.outputs.tag }}
           tag-message: Release ${{ steps.release_meta.outputs.tag }}
