@@ -1,8 +1,5 @@
 ([
   (comment)
-  (directive_statement)
-  (disable_next_line_directive)
-  (disable_diagnostics_directive)
-  (restore_diagnostics_directive)
+  (diagnostic_comment)
 ] @injection.content
   (#set! injection.language "comment"))
