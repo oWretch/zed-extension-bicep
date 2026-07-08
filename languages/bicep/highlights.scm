@@ -17,6 +17,14 @@
   "from"
   (string) @string.special.path)
 
+(using_statement
+  (string) @string.special.path)
+
+(target_scope_assignment
+  "targetScope" @constant.builtin
+  "=" @operator
+  (string) @string.special.path)
+
 ; Extensions
 (extension_statement
   name: (identifier) @module)
@@ -33,6 +41,12 @@
 ; Namespaces
 (module_declaration
   (identifier) @module)
+
+(module_declaration
+  (string) @string.special.path)
+
+(test_block
+  (string) @string.special.path)
 
 ; Builtins
 (primitive_type) @type.builtin
@@ -194,7 +208,6 @@
   "="
   "!"
   ".?"
-  "..."
 ] @operator
 
 (subscript_expression
@@ -260,8 +273,5 @@
 ; Comments
 [
   (comment)
-  (directive_statement)
-  (disable_next_line_directive)
-  (disable_diagnostics_directive)
-  (restore_diagnostics_directive)
+  (diagnostic_comment)
 ] @comment @spell
