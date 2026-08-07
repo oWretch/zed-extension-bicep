@@ -22,3 +22,18 @@ path = "bicep_params"
 name = "Bicep Language Server"
 languages = [ "Bicep", "Bicep Parameters" ]
 language_ids = {"Bicep" = "bicep", "Bicep Parameters" = "bicep-params"}
+
+[[capabilities]]
+kind = "process:exec"
+command = "*"
+args = ["tool", "list", "--tool-path", "**"]
+
+[[capabilities]]
+kind = "process:exec"
+command = "*"
+args = ["tool", "install", "azure.bicep.langserver", "--tool-path", "**"]
+
+[[capabilities]]
+kind = "process:exec"
+command = "*"
+args = ["tool", "update", "azure.bicep.langserver", "--tool-path", "**"]
