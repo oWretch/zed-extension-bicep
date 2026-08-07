@@ -117,7 +117,7 @@ jobs:
 
       - name: Publish extension
         if: steps.release_meta.outputs.changed == 'true'
-        uses: oWretch/zed-extension-action@46431e104acab5f5c7e88bab21dd03c62398b6a2 # default branch head (no releases/tags)
+        uses: oWretch/zed-extension-action@959f61dce48e6898d6d483dfc612685855457212 # Fix annotated tag resolution for submodule commits
         with:
           extension-name: bicep
           push-to: oWretch/zed-extensions

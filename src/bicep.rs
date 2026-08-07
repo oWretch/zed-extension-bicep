@@ -1,28 +1,30 @@
 //! Zed extension for Bicep language support.
 //!
 //! This extension provides IntelliSense, error checking, and syntax support for Azure Bicep
-//! files (`.bicep` and `.bicepparam`) by downloading and launching the official
-//! [Bicep Language Server](https://github.com/Azure/bicep) via the .NET runtime.
+//! files (`.bicep` and `.bicepparam`) by installing and launching the official
+//! [Bicep Language Server](https://github.com/Azure/bicep) as a .NET tool.
 //!
 //! ## LSP Lifecycle
 //!
-//! 1. **Resolve `dotnet`** — Finds the `dotnet` binary on the system PATH (cached after first lookup).
-//! 2. **Download language server** — Fetches the latest `bicep-langserver.zip` from GitHub releases
-//!    and extracts it to a versioned directory. Old versions are cleaned up automatically.
-//! 3. **Launch** — Runs `dotnet --roll-forward Major <path>/Bicep.LangServer.dll`.
+//! 1. **Install/update** — Uses `dotnet tool install/update Azure.Bicep.LangServer --tool-path
+//!    <work_dir>/bicep-langserver` to place the `bicep-ls` binary at a known absolute path.
+//! 2. **Launch** — Runs `<work_dir>/bicep-langserver/bicep-ls` directly.
+//! 3. **Cleanup** — Removes the legacy `bicep-language-servers/` directory if present.
 
 use std::fs;
-use std::path;
-use zed_extension_api::{self as zed, LanguageServerId, Result};
+use zed_extension_api::{self as zed, serde_json, LanguageServerId, Result};
+
+const TOOL_DIR: &str = "bicep-langserver";
+const PACKAGE_ID: &str = "azure.bicep.langserver";
 
 struct BicepExtension {
-    dotnet_binary_path: Option<String>,
+    bicep_ls_path: Option<String>,
 }
 
 impl zed::Extension for BicepExtension {
     fn new() -> Self {
         Self {
-            dotnet_binary_path: None,
+            bicep_ls_path: None,
         }
     }
 
@@ -31,136 +33,115 @@ impl zed::Extension for BicepExtension {
         language_server_id: &LanguageServerId,
         worktree: &zed::Worktree,
     ) -> Result<zed::Command> {
+        let bicep_ls = self.bicep_ls_path(language_server_id, worktree)?;
         Ok(zed::Command {
-            command: self.dotnet_binary_path(worktree)?.clone(),
-            args: vec![
-                "--roll-forward".to_string(),
-                "Major".to_string(),
-                self.language_server_path(language_server_id)?,
-            ],
+            command: bicep_ls,
+            args: vec![],
             env: Default::default(),
         })
+    }
+
+    fn language_server_workspace_configuration(
+        &mut self,
+        _language_server_id: &LanguageServerId,
+        _worktree: &zed::Worktree,
+    ) -> Result<Option<serde_json::Value>> {
+        Ok(Some(serde_json::json!({
+            "bicep": {}
+        })))
     }
 }
 
 impl BicepExtension {
-    fn dotnet_binary_path(&mut self, worktree: &zed::Worktree) -> Result<String> {
-        // Return cached path — skip re-check on every LSP request.
-        if let Some(path) = &self.dotnet_binary_path {
-            if fs::metadata(path).is_ok_and(|stat| stat.is_file()) {
+    fn bicep_ls_path(
+        &mut self,
+        language_server_id: &LanguageServerId,
+        worktree: &zed::Worktree,
+    ) -> Result<String> {
+        // Return cached path if the binary still exists.
+        if let Some(path) = &self.bicep_ls_path {
+            if fs::metadata(path).is_ok_and(|s| s.is_file()) {
                 return Ok(path.clone());
             }
         }
 
-        let dotnet_path = worktree
-            .which("dotnet")
-            .ok_or("dotnet not found. Install the .NET SDK 8.0+ from https://dotnet.microsoft.com/download. Note: the standalone Bicep CLI is not sufficient.")?;
+        let dotnet = worktree.which("dotnet").ok_or(
+            "dotnet not found. Install the .NET SDK 8.0+ from https://dotnet.microsoft.com/download.",
+        )?;
 
-        // Verify dotnet >= 8.0. Skip silently if the version check fails (unusual installs).
-        let mut version_cmd = zed::Command {
-            command: dotnet_path.clone(),
-            args: vec!["--version".to_string()],
-            env: Default::default(),
-        };
-        if let Ok(output) = version_cmd.output() {
-            if let Ok(version) = String::from_utf8(output.stdout) {
-                let major = version
-                    .trim()
-                    .split('.')
-                    .next()
-                    .and_then(|s| s.parse::<u32>().ok());
-                if let Some(major) = major {
-                    if major < 8 {
-                        return Err(format!(
-                            "dotnet 8.0+ required (found {}). Download from https://dotnet.microsoft.com/download",
-                            version.trim()
-                        ));
-                    }
-                }
-            }
-        }
+        // Zed sets PWD to the absolute extension work directory in the WASM sandbox.
+        // We need absolute paths so subprocess spawning resolves them correctly.
+        let work_dir = std::env::var("PWD").map_err(|_| "could not read PWD from environment")?;
+        let tool_path = format!("{work_dir}/{TOOL_DIR}");
+        let bicep_ls = format!("{tool_path}/bicep-ls");
 
-        self.dotnet_binary_path = Some(dotnet_path.clone());
-        Ok(dotnet_path)
-    }
-
-    fn language_server_path(&mut self, language_server_id: &LanguageServerId) -> Result<String> {
         zed::set_language_server_installation_status(
             language_server_id,
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
         );
 
-        let install_root = "bicep-language-servers";
+        // Check if the tool is already installed in our local tool path.
+        let already_installed = zed::Command {
+            command: dotnet.clone(),
+            args: vec![
+                "tool".to_string(),
+                "list".to_string(),
+                "--tool-path".to_string(),
+                tool_path.clone(),
+                "--format".to_string(),
+                "json".to_string(),
+            ],
+            env: Default::default(),
+        }
+        .output()
+        .ok()
+        .and_then(|out| serde_json::from_slice::<serde_json::Value>(&out.stdout).ok())
+        .is_some_and(|json| {
+            json["data"].as_array().is_some_and(|entries| {
+                entries.iter().any(|e| {
+                    e["packageId"]
+                        .as_str()
+                        .is_some_and(|id| id.eq_ignore_ascii_case(PACKAGE_ID))
+                })
+            })
+        });
 
-        // Get the latest release
-        let release = zed::latest_github_release(
-            "Azure/bicep",
-            zed::GithubReleaseOptions {
-                require_assets: true,
-                pre_release: false,
-            },
-        )?;
+        zed::set_language_server_installation_status(
+            language_server_id,
+            &zed::LanguageServerInstallationStatus::Downloading,
+        );
 
-        // Find the language server release asset
-        let asset = release
-            .assets
-            .iter()
-            .find(|asset| asset.name == "bicep-langserver.zip")
-            .ok_or_else(|| "no bicep-langserver.zip found".to_string())?;
+        let subcommand = if already_installed {
+            "update"
+        } else {
+            "install"
+        };
+        let output = zed::Command {
+            command: dotnet,
+            args: vec![
+                "tool".to_string(),
+                subcommand.to_string(),
+                PACKAGE_ID.to_string(),
+                "--tool-path".to_string(),
+                tool_path,
+            ],
+            env: Default::default(),
+        }
+        .output()
+        .map_err(|e| format!("failed to run dotnet tool {subcommand}: {e}"))?;
 
-        let version_name = format!("bicep-langserver-{}", release.version);
-        let version_dir = format!("{install_root}/{version_name}");
-        let lsp_path = format!("{}/Bicep.LangServer.dll", version_dir);
-
-        if !fs::metadata(&lsp_path).is_ok_and(|stat| stat.is_file()) {
-            // Download the asset
-            zed::set_language_server_installation_status(
-                language_server_id,
-                &zed::LanguageServerInstallationStatus::Downloading,
-            );
-            fs::create_dir_all(install_root).map_err(|e| {
-                format!("failed to create installation directory {install_root}: {e}")
-            })?;
-            zed::download_file(
-                &asset.download_url,
-                &version_dir,
-                zed::DownloadedFileType::Zip,
-            )
-            .map_err(|err| format!("download error {}", err))?;
-
-            // Clean up old versions
-            let entries = fs::read_dir(install_root).map_err(|e| {
-                format!("failed to list installation directory {install_root}: {e}")
-            })?;
-            for entry in entries {
-                let entry = entry.map_err(|e| format!("failed to load directory entry {e}"))?;
-                let file_type = entry
-                    .file_type()
-                    .map_err(|e| format!("failed to inspect directory entry type {e}"))?;
-                if !file_type.is_dir() {
-                    continue;
-                }
-
-                let entry_name = entry.file_name();
-                let entry_name = entry_name.to_string_lossy();
-                if entry_name.starts_with("bicep-langserver-") && entry_name != version_name {
-                    let path = entry.path();
-                    fs::remove_dir_all(&path).map_err(|e| {
-                        format!(
-                            "failed to remove old language server directory {}: {e}",
-                            path.display()
-                        )
-                    })?;
-                }
-            }
+        if output.status != Some(0) {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("dotnet tool {subcommand} failed: {stderr}"));
         }
 
-        let abs_path = path::absolute(&lsp_path)
-            .map_err(|e| format!("failed to get absolute path {e}"))?
-            .to_str()
-            .unwrap()
-            .to_string();
-        Ok(abs_path)
+        // Remove the legacy bicep-language-servers/ directory if present.
+        if fs::metadata("bicep-language-servers").is_ok() {
+            let _ = fs::remove_dir_all("bicep-language-servers");
+        }
+
+        self.bicep_ls_path = Some(bicep_ls.clone());
+        Ok(bicep_ls)
     }
 }
 
