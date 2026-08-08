@@ -11,5 +11,5 @@
   (ternary_expression)
   (string)
   (comment)
-  (diagnostic_comment)
+  (region_block)
 ] @fold

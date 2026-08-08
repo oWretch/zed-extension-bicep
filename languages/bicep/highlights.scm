@@ -23,7 +23,7 @@
 (target_scope_assignment
   "targetScope" @constant.builtin
   "=" @operator
-  (string) @string.special.path)
+  (string) @string)
 
 ; Extensions
 (extension_statement
@@ -273,5 +273,5 @@
 ; Comments
 [
   (comment)
-  (diagnostic_comment)
+  (directive_statement)
 ] @comment @spell
