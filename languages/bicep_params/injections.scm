@@ -1,5 +1,5 @@
 ([
   (comment)
-  (diagnostic_comment)
+  (directive_statement)
 ] @injection.content
   (#set! injection.language "comment"))
