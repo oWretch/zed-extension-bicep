@@ -128,6 +128,9 @@
 (subscript_expression
   "?" @operator)
 
+(subscript_expression
+  "^" @operator)
+
 (nullable_type
   "?" @operator)
 
@@ -185,5 +188,5 @@
 ; Comments
 [
   (comment)
-  (diagnostic_comment)
+  (directive_statement)
 ] @comment @spell
